@@ -40,7 +40,7 @@ impl Tile {
 fn model(app: &App) -> Model {
     let win = app.window_rect();
 
-    let grid_tile_size = 50f32;
+    let grid_tile_size = 60f32;
     let grid_x = (win.w() / grid_tile_size) as isize;
     let grid_y = (win.h() / grid_tile_size) as isize;
 
@@ -61,11 +61,12 @@ fn model(app: &App) -> Model {
     grid[2][1] = Tile::alive();
     grid[2][2] = Tile::alive();
 
-    grid[5][2] = Tile::alive();
-    grid[5][3] = Tile::alive();
-    grid[5][4] = Tile::alive();
+    grid[8][2] = Tile::alive();
+    grid[8][3] = Tile::alive();
+    grid[8][4] = Tile::alive();
     //
-    
+
+
     Model {
         grid_tile_size,
         grid_x,
@@ -74,10 +75,52 @@ fn model(app: &App) -> Model {
     }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update) {
+fn update(app: &App, model: &mut Model, _update: Update) {
+    if app.elapsed_frames() % 60 != 0 {
+        return;
+    }
+
+    for x in 0..model.grid_x {
+        for y in 0..model.grid_y {
+            // Count neighbours
+            let mut neighbours = 0;
+
+            for xoff in -1..=1 {
+                for yoff in -1..=1 {
+                    if xoff == 0 && yoff == 0 { continue; }
+                    let xt = xoff + x;
+                    let yt = yoff + y;
+                    if xt >= 0 && xt < model.grid_x && yt >= 0 && yt < model.grid_y {
+                        if model.grid[xt as usize][yt as usize].alive == true {
+                            neighbours = neighbours + 1;
+                        }
+                    }
+                }
+            }
+            println!("{}, {} --- {}", x, y, neighbours);
+
+            // Set next state
+            if neighbours == 3 {
+                model.grid[x as usize][y as usize].nextAlive = true;
+            } else if neighbours == 2 && model.grid[x as usize][y as usize].alive == true {
+                model.grid[x as usize][y as usize].nextAlive = true;
+            } else {
+                model.grid[x as usize][y as usize].nextAlive = false;
+            }
+        }
+    }
+
+    for x in 0..model.grid_x {
+        for y in 0..model.grid_y {
+            model.grid[x as usize][y as usize].alive = model.grid[x as usize][y as usize].nextAlive;
+        }
+    }
 }
 
 fn view(app: &App, model: &Model, frame: Frame){
+    if app.elapsed_frames() % 60 != 0 {
+        return;
+    }
     let draw = app.draw();
     let win = app.window_rect();
 
@@ -95,7 +138,7 @@ fn view(app: &App, model: &Model, frame: Frame){
                 .wh(Vec2::splat(model.grid_tile_size))
                 .color(sq_color)
                 .stroke(BLACK)
-                .stroke_weight(2.0);
+                .stroke_weight(1.0);
         }
     }
     
