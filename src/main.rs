@@ -40,7 +40,7 @@ impl Tile {
 fn model(app: &App) -> Model {
     let win = app.window_rect();
 
-    let grid_tile_size = 60f32;
+    let grid_tile_size = 10f32;
     let grid_x = (win.w() / grid_tile_size) as isize;
     let grid_y = (win.h() / grid_tile_size) as isize;
 
@@ -48,24 +48,16 @@ fn model(app: &App) -> Model {
 
     for _x in 0..grid_x {
         let mut line: TileVec = Vec::new();
-
         for _y in 0..grid_y {
-            line.push(Tile::dead());
+            if random_f32() < 0.5f32 {
+                line.push(Tile::dead());
+            } else {
+                line.push(Tile::alive());
+            }
+            
         }
-
         grid.push(line);
     }
-    // TESTING START POSITION
-    grid[1][1] = Tile::alive();
-    grid[1][2] = Tile::alive();
-    grid[2][1] = Tile::alive();
-    grid[2][2] = Tile::alive();
-
-    grid[8][2] = Tile::alive();
-    grid[8][3] = Tile::alive();
-    grid[8][4] = Tile::alive();
-    //
-
 
     Model {
         grid_tile_size,
@@ -76,9 +68,7 @@ fn model(app: &App) -> Model {
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
-    if app.elapsed_frames() % 60 != 0 {
-        return;
-    }
+    
 
     for x in 0..model.grid_x {
         for y in 0..model.grid_y {
@@ -97,7 +87,6 @@ fn update(app: &App, model: &mut Model, _update: Update) {
                     }
                 }
             }
-            println!("{}, {} --- {}", x, y, neighbours);
 
             // Set next state
             if neighbours == 3 {
@@ -118,9 +107,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
 }
 
 fn view(app: &App, model: &Model, frame: Frame){
-    if app.elapsed_frames() % 60 != 0 {
-        return;
-    }
+    
     let draw = app.draw();
     let win = app.window_rect();
 
